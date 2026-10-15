@@ -36,3 +36,26 @@ J'ai ensuite connecté ces données saines à Excel pour concevoir un **Tableau 
 
 ---
 *Besoin d'un expert pour auditer, nettoyer ou valoriser vos données d'entreprise ? Contactez-moi !*
+---
+
+## 📦 Projet 2 : Consolidation Logistique Internationale & Assainissement de Données B2B (100 000 lignes cumulées)
+
+### 📌 1. Le Défi Business (Contexte Multi-Sources)
+Ce projet combine la restructuration d'un fichier logistique défaillant et la réparation d'un registre d'entreprises B2B dont les données étaient devenues inexploitables à la suite d'un bug d'encodage :
+- **Anomalies Logistiques :** Perte du zéro initial sur les codes postaux français (ex: `9200` au lieu de `09200`) et saisies de pays anarchiques (`"fr"`, `"france "`, `"NaN"`).
+- **Corruption d'Encodage B2B :** Perte de l'encodage UTF-8 détruisant toutes les lettres accentuées de la colonne Raison Sociale (ex: `"SociÃ©tÃ© Nouvelle"` au lieu de `"Société Nouvelle"`).
+- **Incohérence Structurelle :** Présence de faux numéros SIRET ne respectant pas la norme légale des 14 chiffres.
+
+### 🛠️ 2. Ma Solution Technique (PostgreSQL)
+J'ai conçu un script SQL global pour automatiser la désinfection de ces deux bases :
+- **Left Padding (`LPAD`) :** Restauration automatique des codes postaux sur 5 caractères.
+- **Réparation d'encodage (`REPLACE`) :** Remplacement ciblé et chirurgical des blocs de caractères corrompus (`Ã©`) par leur équivalent propre (`é`) pour redonner une image professionnelle au registre.
+- **Nettoyage RegEx & Validation de Longueur :** Filtrage des espaces sur les SIRET par expressions régulières et isolation des identifiants légaux invalides via la fonction `LENGTH`.
+
+### 📊 3. Impact Business
+Le client dispose désormais de deux bases de données interconnectables, entièrement assainies et fiabilisées. Les adresses de livraison sont prêtes pour le routage postal, la raison sociale des entreprises est parfaitement orthographiée pour l'édition des factures, et les numéros SIRET sont structurellement valides.
+
+---
+
+### 📂 Fichiers inclus dans ce projet :
+*   [`nettoyage_logistique_b2b.sql`](./nettoyage_logistique_b2b.sql) : Mon script SQL unifié pour le traitement logistique et le registre B2B.
