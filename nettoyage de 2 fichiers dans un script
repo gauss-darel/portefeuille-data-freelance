@@ -1,0 +1,139 @@
+/* PROJET DE NETTYAGE , OPTIMISATION ET DE 
+NORMALISATION DES DONNEES DE 2 FICHIERS */
+
+/* Premier fichier : logistics_international */
+
+
+
+CREATE TABLE IF NOT EXISTS public.logistics_international_dirty (
+    id_expedition VARCHAR(255),
+    code_produit VARCHAR(255),
+    code_postal_destination VARCHAR(255),
+    pays_destination VARCHAR(255),
+    statut_livraison VARCHAR(255)
+
+);
+
+select * FROM public.logistics_international_dirty;
+
+/* suppression securiser des doublons dans le fichier */
+
+DELETE 
+from public.logistics_international_dirty 
+where ctid not in (
+    select min(ctid)
+    from public.logistics_international_dirty
+    group by id_expedition, code_produit, code_postal_destination, pays_destination, statut_livraison
+
+);
+
+/* reparation des codes postaux francais ( ajout du 0 finale) */
+
+update public.logistics_international_dirty
+set code_postal_destination = LPAD(TRIM(code_postal_destination), 5, '0')
+where  length(TRIM(code_postal_destination))<5;
+
+/* verification */
+
+select * FROM public.logistics_international_dirty;
+
+
+/*Harmonisation des pays de destination */
+
+update public.logistics_international_dirty
+set pays_destination =case
+WHEN lower(TRIM(pays_destination)) = '' OR lower(TRIM(pays_destination)) IN ('null', 'nan') THEN NULL
+WHEN lower(TRIM(pays_destination)) = 'fr' THEN 'FRANCE'
+else upper(TRIM(pays_destination))
+end;
+
+/* verification */
+
+select * FROM public.logistics_international_dirty;
+
+
+/*Harmonisation des statuts de livraison */
+
+update public.logistics_international_dirty
+SET statut_livraison = case
+when lower(TRIM(statut_livraison)) = '' OR lower(TRIM(statut_livraison)) IN ('null', 'blank', 'n/a', 'nan') THEN NULL
+else upper(TRIM(statut_livraison))
+end;
+
+/* verification */
+
+select * FROM public.logistics_international_dirty;
+
+
+/* le nettoyage de se fichier est termine nous allons passer au suivant*/
+
+
+
+create TABLE IF NOT EXISTS public.registre_b2b_dirty (
+    id_entreprise VARCHAR(255),
+    raison_sociale VARCHAR(255),
+    numero_siret VARCHAR(255),
+    secteur_activite VARCHAR(255)
+);
+
+SELECT * FROM public.registre_b2b_dirty;
+
+/* suppression securiser des doublons dans le fichier */
+
+delete 
+from public.registre_b2b_dirty
+where ctid not in (
+    select min(ctid)
+    from public.registre_b2b_dirty
+    group by id_entreprise, raison_sociale, numero_siret, secteur_activite
+);
+
+/* uniformisation de la colonne raison sociale */
+
+update public.registre_b2b_dirty
+set raison_sociale = replace(upper(TRIM(raison_sociale)), 'Ã©', 'é');
+
+/* verification */
+
+SELECT * FROM public.registre_b2b_dirty;
+
+
+update public.registre_b2b_dirty
+SET raison_sociale = lower(TRIM(raison_sociale));
+
+SELECT * FROM public.registre_b2b_dirty;
+
+/*suppression des caracteres speciaux dans la colonne numero_siret */
+
+update public.registre_b2b_dirty
+set numero_siret = regexp_replace(numero_siret, '[^0-9]', '', 'g');
+
+SELECT * FROM public.registre_b2b_dirty;
+
+
+/*suppression des numeros invalides */ 
+
+update public.registre_b2b_dirty
+set numero_siret = case 
+WHEN length(TRIM(numero_siret))> 14 THEN NULL
+when length(TRIM(numero_siret))<14 THEN NULL
+else TRIM(numero_siret)
+end;
+
+SELECT * FROM public.registre_b2b_dirty;
+
+/*nettoyage du champ secteur d'activiter */
+
+update public.registre_b2b_dirty
+set secteur_activite = case
+when lower(TRIM(secteur_activite)) = '' OR lower(TRIM(secteur_activite)) IN ('null', 'n/a') THEN NULL
+ELSE initcap(TRIM(secteur_activite))
+end;
+
+SELECT * FROM public.registre_b2b_dirty;
+
+/* le nettoyage de se fichier est desormais termine nous allons passer a notre dernier fichier*/
+
+
+
+
