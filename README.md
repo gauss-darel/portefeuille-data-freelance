@@ -59,3 +59,26 @@ Le client dispose désormais de deux bases de données interconnectables, entiè
 
 ### 📂 Fichiers inclus dans ce projet :
 *   [`nettoyage_logistique_b2b.sql`](./nettoyage_logistique_b2b.sql) : Mon script SQL unifié pour le traitement logistique et le registre B2B.
+---
+
+## 📊 Projet 3 : Traitement et Conversion d'un Dump CRM Applicatif (50 000 prospects - MySQL)
+
+### 📌 1. Le Défi Business (Contexte Système)
+Lors de la récupération d'un export brut (dump) issu d'un CRM applicatif, les données se sont révélées totalement incompatibles avec les outils d'analyse décisionnelle traditionnels :
+- **Timestamps Unix Bruts :** Les dates d'interaction étaient stockées sous forme de secondes écoulées depuis 1970 (ex: `1791834000`), rendant toute analyse temporelle illisible.
+- **Pollution de Lignes Fantômes :** Un bug d'exportation avait généré des milliers de lignes vides et d'enregistrements sans identifiant de lead.
+- **Scores d'Intérêt Corrompus :** La colonne de notation commerciale était polluée par des valeurs textuelles (ex: `"cent"`) et des scores négatifs aberrants.
+
+### 🛠️ 2. Ma Solution Technique (MySQL)
+J'ai configuré un environnement de traitement sous MySQL pour redresser l'intégrité du fichier :
+- **Contournement des protections SGBD :** Gestion des variables système (`SQL_SAFE_UPDATES`) pour permettre la modification sécurisée de volumes de données massifs.
+- **Traduction Temporelle Avancée :** Utilisation combinée de `FROM_UNIXTIME()` et de traitements réguliers (`REGEXP`) pour décoder à la volée les Timestamps Unix et harmoniser les masques à slashs.
+- **Désinfection Numérique par Cast :** Isolement des expressions alphabétiques parasites et conversion forcée (`CAST AS SIGNED`) pour nettoyer et stabiliser la colonne des scores.
+
+### 📊 3. Impact Business
+La table applicative a été purgée, typée de manière stricte (changement physique vers les formats `DATE` et `INT`) et entièrement fiabilisée. Les équipes commerciales disposent maintenant d'un fichier de prospection net, permettant de segmenter immédiatement les leads par score d'intérêt et par fraîcheur de contact.
+
+---
+
+### 📂 Fichiers inclus dans ce projet :
+*   [`nettoyage_crm_mysql.sql`](./nettoyage_crm_mysql.sql) : Mon script de nettoyage et de restructuration sous MySQL.
